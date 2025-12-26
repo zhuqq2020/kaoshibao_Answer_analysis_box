@@ -5,8 +5,8 @@
 // @description  替换考试宝AI解析框内容，支持自定义设置
 // @author       大聪明
 // @match        *://*.kaoshibao.com/*
-// @downloadURL  https://raw.githubusercontent.com/zhuqq2020/kaoshibao_Answer_analysis_box/refs/heads/main/main.js
-// @updateURL    https://raw.githubusercontent.com/zhuqq2020/kaoshibao_Answer_analysis_box/refs/heads/main/main.js
+// @downloadURL  https://raw.githubusercontent.com/zhuqq2020/kaoshibao_Answer_analysis_box/refs/heads/main/main.user.js
+// @updateURL    https://raw.githubusercontent.com/zhuqq2020/kaoshibao_Answer_analysis_box/refs/heads/main/main.user.js
 // @grant       GM_addStyle
 // @grant       GM_notification
 // @grant       GM_registerMenuCommand
