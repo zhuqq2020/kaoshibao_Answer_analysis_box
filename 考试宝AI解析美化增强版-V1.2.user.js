@@ -5,8 +5,8 @@
 // @description  考试宝AI解析美化+智能快捷键+VIP破解+界面净化
 // @author       大聪明
 // @match        *://*.kaoshibao.com/*
-// @downloadURL  https://github.com/zjy9908/Answer_analysis_box/blob/main/main.js
-// @updateURL    https://github.com/zjy9908/Answer_analysis_box/blob/main/main.js
+// @downloadURL  https://github.com/zhuqq2020/kaoshibao_Answer_analysis_box/edit/main/%E8%80%83%E8%AF%95%E5%AE%9DAI%E8%A7%A3%E6%9E%90%E7%BE%8E%E5%8C%96%E5%A2%9E%E5%BC%BA%E7%89%88-V1.2.user.js
+// @updateURL    https://github.com/zhuqq2020/kaoshibao_Answer_analysis_box/edit/main/%E8%80%83%E8%AF%95%E5%AE%9DAI%E8%A7%A3%E6%9E%90%E7%BE%8E%E5%8C%96%E5%A2%9E%E5%BC%BA%E7%89%88-V1.2.user.js
 // @grant       GM_addStyle
 // @grant       GM_notification
 // @grant       GM_registerMenuCommand
