@@ -5,8 +5,8 @@
 // @description  考试宝AI解析美化+智能快捷键+VIP破解+界面净化
 // @author       zhuqq2020,大聪明
 // @match        *://*.kaoshibao.com/*
-// @downloadURL https://raw.githubusercontent.com/zhuqq2020/kaoshibao_Answer_analysis_box/refs/heads/main/考试宝AI解析美化增强版-V1.2.user.js
-// @updateURL    https://raw.githubusercontent.com/zhuqq2020/kaoshibao_Answer_analysis_box/refs/heads/main/考试宝AI解析美化增强版-V1.2.user.js
+// @downloadURL https://raw.githubusercontent.com/zhuqq2020/kaoshibao_Answer_analysis_box/refs/heads/main/main.user.js
+// @updateURL    https://raw.githubusercontent.com/zhuqq2020/kaoshibao_Answer_analysis_box/refs/heads/main/main.user.js
 // @grant       GM_addStyle
 // @grant       GM_notification
 // @grant       GM_registerMenuCommand
