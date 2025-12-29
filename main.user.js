@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         考试宝AI解析美化增强版
 // @namespace    /
-// @version      V1.2
+// @version      V1.3
 // @description  考试宝AI解析美化+智能快捷键+VIP破解+界面净化
 // @author       zhuqq2020,大聪明
-// @match        *://*.kaoshibao.com/*
-// @downloadURL  https://raw.githubusercontent.com/zhuqq2020/kaoshibao_Answer_analysis_box/refs/heads/main/main.user.js
+// @match        *://*.kaoshibao.com/online/?paperId=*
+// @downloadURL https://raw.githubusercontent.com/zhuqq2020/kaoshibao_Answer_analysis_box/refs/heads/main/main.user.js
 // @updateURL    https://raw.githubusercontent.com/zhuqq2020/kaoshibao_Answer_analysis_box/refs/heads/main/main.user.js
 // @grant       GM_addStyle
 // @grant       GM_notification
@@ -23,14 +23,14 @@
         // 获取页面主体文本的字体大小
         const bodyStyle = window.getComputedStyle(document.body);
         const bodyFontSize = parseFloat(bodyStyle.fontSize);
-        
+
         // 获取考试宝解析的默认字体大小
         const defaultAnalysis = document.querySelector('p.answer-analysis');
         if (defaultAnalysis) {
             const style = window.getComputedStyle(defaultAnalysis);
             return parseFloat(style.fontSize);
         }
-        
+
         // 如果找不到，返回常见的默认值或body字体大小
         return bodyFontSize || 14;
     }
@@ -43,14 +43,14 @@
         showFullContent: true,
         removeVipBox: true,
         scanInterval: 2000,
-        
+
         // 智能快捷键功能
         smartEnter: true,          // 智能回车
         cleanUI: true,             // 界面净化
         scriptNav: true,           // 脚本翻页
         audioFeedback: false,      // 答题音效
         keyVisual: true,           // 按键视觉反馈
-        
+
         // 快捷键映射
         keys: {
             submit: 'Enter',       // 提交答案
@@ -84,7 +84,7 @@
             op_Y: '',             // 选项Y
             op_Z: ''              // 选项Z
         },
-        
+
         // 样式设置 - 使用网页默认字体大小
         fontSize: getDefaultFontSize(),
         lineHeight: 1.6,
@@ -92,14 +92,14 @@
         backgroundColor: '#f8f9fa',
         borderColor: '#4a6baf',
         textColor: '#333333',
-        
+
         // 文字阴影设置
         textShadowEnabled: false,
         textShadowColor: 'rgba(0,0,0,0.3)',
         textShadowX: 0,
         textShadowY: 1,
         textShadowBlur: 2,
-        
+
         // 解析框阴影设置
         boxShadowEnabled: true,
         boxShadowColor: 'rgba(0,0,0,0.1)',
@@ -107,12 +107,12 @@
         boxShadowY: 2,
         boxShadowBlur: 8,
         boxShadowSpread: 0,
-        
+
         // 高级设置
         borderRadius: 8,
         padding: 12,
         borderLeftWidth: 4,
-        
+
         // UI位置
         uiPos: { top: '', left: '' }
     };
@@ -131,7 +131,7 @@
                 userConfig = { ...DEFAULT_CONFIG, ...savedConfig };
                 // 确保keys对象完整
                 userConfig.keys = { ...DEFAULT_CONFIG.keys, ...userConfig.keys };
-                
+
                 // 如果用户之前没有设置过字体大小，使用网页默认值
                 if (!savedConfig.fontSize) {
                     userConfig.fontSize = getDefaultFontSize();
@@ -148,7 +148,7 @@
             GM_setValue('aa_config', userConfig);
             updateStyles();
             processPage();
-            
+
             GM_notification({
                 title: '考试宝解析',
                 text: '设置已保存并应用',
@@ -183,34 +183,35 @@
     function updateStyles() {
         const styleId = 'aa-custom-styles';
         let styleElement = document.getElementById(styleId);
-        
+
         if (!styleElement) {
             styleElement = document.createElement('style');
             styleElement.id = styleId;
             document.head.appendChild(styleElement);
         }
-        
+
         // 构建文字阴影字符串
         let textShadowValue = 'none';
         if (userConfig.textShadowEnabled) {
             textShadowValue = `${userConfig.textShadowX}px ${userConfig.textShadowY}px ${userConfig.textShadowBlur}px ${userConfig.textShadowColor}`;
         }
-        
+
         // 构建解析框阴影字符串
         let boxShadowValue = 'none';
         if (userConfig.boxShadowEnabled) {
             boxShadowValue = `${userConfig.boxShadowX}px ${userConfig.boxShadowY}px ${userConfig.boxShadowBlur}px ${userConfig.boxShadowSpread}px ${userConfig.boxShadowColor}`;
         }
-        
+
         // 字体设置 - 处理inherit特殊情况
         const fontSize = userConfig.fontSize;
         const fontFamily = userConfig.fontFamily === 'inherit' ? 'inherit' : `${userConfig.fontFamily} !important`;
-        
+
         // 界面净化CSS
         const cleanUICSS = userConfig.cleanUI ? `
             /* 界面净化 - 隐藏干扰元素 */
-            .header, .new-footer, .right-float-window, .advertisement, .ad-box,
-            .breadcrumb, .lock-icon, .icon-vip, .vip-icon,
+            /* 界面净化 - 隐藏干扰元素 */
+            .new-footer, .right-float-window, .advertisement, .ad-box,
+            .lock-icon, .icon-vip, .vip-icon,
             .open-vip-btn, .vip-dialog, .pay-dialog,
             .mask-box, .blur-mask,
             .practice-footer, .navigation, .copyright,
@@ -221,20 +222,23 @@
                 opacity: 0 !important;
                 visibility: hidden !important;
             }
-            
+
+
+            /* breadcrumb 现在不会被隐藏，所以不需要额外设置 */
+
             /* 主内容区域优化 */
             .app-main { padding-top: 10px !important; }
             .practice-main { margin: 0 !important; padding: 0 !important; }
             .practice-content { margin: 0 !important; }
-            
+
             /* 精简顶部 */
             .practice-header { min-height: 40px !important; padding: 10px !important; }
             .header-tools { margin-top: 5px !important; }
-            
+
             /* 隐藏底部 */
             .practice-bottom, .footer-area { display: none !important; }
         ` : '';
-        
+
         styleElement.textContent = `
             /* 隐藏VIP限制元素 */
             .hide-ai-analysis,
@@ -250,12 +254,12 @@
                 padding: 0 !important;
                 margin: 0 !important;
             }
-            
+
             /* 删除VIP信息框 */
             .vip-quanyi {
                 display: none !important;
             }
-            
+
             /* 修复解析内容显示问题 - 强制显示完整内容 */
             .answer-analysis-row,
             .answer-analysis-row.hide-height,
@@ -272,7 +276,7 @@
                 position: relative !important;
                 z-index: 10 !important;
             }
-            
+
             /* 移除所有遮罩层和模糊效果 */
             .analysis-mask,
             .blur-mask,
@@ -294,12 +298,12 @@
                 top: -9999px !important;
                 left: -9999px !important;
             }
-            
+
             /* 移除遮罩 */
             .analysis-mask {
                 display: none !important;
             }
-            
+
             /* 美化解析内容样式 - 强制显示完整内容 */
             p.answer-analysis,
             .answer-analysis,
@@ -317,7 +321,7 @@
                 box-shadow: ${boxShadowValue} !important;
                 text-shadow: ${textShadowValue} !important;
                 transition: all 0.3s ease !important;
-                
+
                 /* 强制显示完整内容 */
                 max-height: none !important;
                 height: auto !important;
@@ -329,23 +333,23 @@
                 -webkit-text-fill-color: ${userConfig.textColor} !important;
                 user-select: text !important;
                 -webkit-user-select: text !important;
-                
+
                 /* 修复文本换行 */
                 white-space: normal !important;
                 word-wrap: break-word !important;
                 word-break: break-word !important;
                 overflow-wrap: break-word !important;
                 text-overflow: unset !important;
-                
+
                 /* 移除可能的内容截断 */
                 -webkit-line-clamp: unset !important;
                 line-clamp: unset !important;
-                
+
                 /* 确保不会被遮挡 */
                 position: relative !important;
                 z-index: 20 !important;
             }
-            
+
             /* 修复解析内容中的段落和文本 */
             .answer-analysis p,
             .answer-analysis span,
@@ -368,7 +372,7 @@
                 white-space: normal !important;
                 word-wrap: break-word !important;
             }
-            
+
             /* 增强原解析按钮样式 */
             .check-origin-text {
                 cursor: pointer !important;
@@ -379,12 +383,12 @@
                 border-radius: 4px !important;
                 transition: all 0.3s ease !important;
             }
-            
+
             .check-origin-text:hover {
                 background-color: ${userConfig.borderColor} !important;
                 color: white !important;
             }
-            
+
             /* 修复父容器 */
             .answer-box,
             .analysis-wrapper,
@@ -395,7 +399,7 @@
                 height: auto !important;
                 position: relative !important;
             }
-            
+
             /* 确保所有可能遮挡的元素都被移除 */
             .answer-analysis:before,
             .answer-analysis:after,
@@ -406,9 +410,9 @@
                 display: none !important;
                 content: none !important;
             }
-            
+
             ${cleanUICSS}
-            
+
             /* 设置面板样式 */
             #aa-settings-panel {
                 position: fixed !important;
@@ -426,11 +430,11 @@
                 border: 2px solid ${userConfig.borderColor} !important;
                 display: none !important;
             }
-            
+
             #aa-settings-panel.active {
                 display: block !important;
             }
-            
+
             .aa-settings-header {
                 padding: 18px 20px !important;
                 background: linear-gradient(135deg, ${userConfig.borderColor} 0%, #3a5a9f 100%) !important;
@@ -443,14 +447,14 @@
                 cursor: move !important;
                 user-select: none !important;
             }
-            
+
             .aa-settings-content {
                 padding: 20px !important;
                 max-height: calc(85vh - 70px) !important;
                 overflow-y: auto !important;
                 background: #fafafa !important;
             }
-            
+
             .aa-settings-group {
                 margin-bottom: 20px !important;
                 background: white !important;
@@ -458,7 +462,7 @@
                 border-radius: 8px !important;
                 border: 1px solid #eee !important;
             }
-            
+
             .aa-settings-title {
                 font-weight: 600 !important;
                 margin-bottom: 12px !important;
@@ -467,21 +471,21 @@
                 padding-bottom: 8px !important;
                 border-bottom: 2px solid ${userConfig.borderColor} !important;
             }
-            
+
             .aa-setting-item {
                 margin-bottom: 15px !important;
                 display: flex !important;
                 align-items: center !important;
                 justify-content: space-between !important;
             }
-            
+
             .aa-setting-label {
                 font-size: 14px !important;
                 color: #555 !important;
                 flex: 1 !important;
                 margin-right: 15px !important;
             }
-            
+
             .aa-setting-input {
                 width: 80px !important;
                 padding: 8px 10px !important;
@@ -494,13 +498,13 @@
                 text-align: center !important;
                 font-weight: bold !important;
             }
-            
+
             .aa-setting-input:focus {
                 border-color: ${userConfig.borderColor} !important;
                 outline: none !important;
                 box-shadow: 0 0 0 2px rgba(74, 107, 175, 0.1) !important;
             }
-            
+
             .aa-setting-input-long {
                 width: 120px !important;
                 padding: 8px 10px !important;
@@ -511,13 +515,13 @@
                 background: white !important;
                 transition: border 0.3s !important;
             }
-            
+
             .aa-setting-input-long:focus {
                 border-color: ${userConfig.borderColor} !important;
                 outline: none !important;
                 box-shadow: 0 0 0 2px rgba(74, 107, 175, 0.1) !important;
             }
-            
+
             .aa-setting-color {
                 width: 40px !important;
                 height: 35px !important;
@@ -527,11 +531,11 @@
                 padding: 0 !important;
                 transition: border 0.3s !important;
             }
-            
+
             .aa-setting-color:hover {
                 border-color: ${userConfig.borderColor} !important;
             }
-            
+
             .aa-setting-switch {
                 width: 50px !important;
                 height: 24px !important;
@@ -543,12 +547,12 @@
                 flex-shrink: 0 !important;
                 border: 1px solid #bbb !important;
             }
-            
+
             .aa-setting-switch.active {
                 background: ${userConfig.borderColor} !important;
                 border-color: ${userConfig.borderColor} !important;
             }
-            
+
             .aa-setting-switch::after {
                 content: '' !important;
                 position: absolute !important;
@@ -561,11 +565,11 @@
                 transition: transform 0.3s !important;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
             }
-            
+
             .aa-setting-switch.active::after {
                 transform: translateX(26px) !important;
             }
-            
+
             .aa-settings-buttons {
                 display: flex !important;
                 gap: 12px !important;
@@ -573,7 +577,7 @@
                 padding-top: 15px !important;
                 border-top: 1px solid #eee !important;
             }
-            
+
             .aa-settings-btn {
                 flex: 1 !important;
                 padding: 12px !important;
@@ -585,30 +589,30 @@
                 font-size: 14px !important;
                 text-align: center !important;
             }
-            
+
             .aa-settings-save {
                 background: ${userConfig.borderColor} !important;
                 color: white !important;
             }
-            
+
             .aa-settings-save:hover {
                 background: #3a5a9f !important;
                 transform: translateY(-2px) !important;
                 box-shadow: 0 4px 8px rgba(58, 90, 159, 0.3) !important;
             }
-            
+
             .aa-settings-reset {
                 background: #f0f0f0 !important;
                 color: #666 !important;
                 border: 1px solid #ddd !important;
             }
-            
+
             .aa-settings-reset:hover {
                 background: #e0e0e0 !important;
                 transform: translateY(-2px) !important;
                 box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
             }
-            
+
             /* 状态指示器 */
             .aa-replacement-status {
                 font-size: 12px !important;
@@ -619,12 +623,12 @@
                 margin-left: 10px !important;
                 display: inline-block !important;
             }
-            
+
             .aa-status-success {
                 color: #52c41a !important;
                 background: #f6ffed !important;
             }
-            
+
             /* 设置按钮 */
             #aa-settings-trigger {
                 position: fixed !important;
@@ -646,16 +650,16 @@
                 border: none !important;
                 user-select: none !important;
             }
-            
+
             #aa-settings-trigger:hover {
                 transform: scale(1.15) rotate(15deg) !important;
                 box-shadow: 0 8px 25px rgba(74, 107, 175, 0.5) !important;
             }
-            
+
             #aa-settings-trigger:active {
                 transform: scale(1.05) !important;
             }
-            
+
             /* 遮罩层 */
             .aa-settings-overlay {
                 position: fixed !important;
@@ -668,11 +672,11 @@
                 display: none !important;
                 backdrop-filter: blur(3px) !important;
             }
-            
+
             .aa-settings-overlay.active {
                 display: block !important;
             }
-            
+
             /* 关闭按钮 */
             #aa-settings-close {
                 background: none !important;
@@ -689,11 +693,11 @@
                 justify-content: center !important;
                 transition: transform 0.3s !important;
             }
-            
+
             #aa-settings-close:hover {
                 transform: scale(1.2) rotate(90deg) !important;
             }
-            
+
             /* 按键视觉反馈 */
             .aa-key-indicator {
                 position: fixed !important;
@@ -709,7 +713,7 @@
                 opacity: 0 !important;
                 transition: all 0.4s ease !important;
             }
-            
+
             /* 快捷键提示 */
             .aa-shortcut-hint {
                 position: fixed !important;
@@ -725,20 +729,20 @@
                 box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
                 max-width: 300px !important;
             }
-            
+
             .aa-hint-title {
                 font-weight: bold !important;
                 color: ${userConfig.borderColor} !important;
                 margin-bottom: 5px !important;
                 font-size: 13px !important;
             }
-            
+
             .aa-hint-item {
                 display: flex !important;
                 justify-content: space-between !important;
                 margin-bottom: 3px !important;
             }
-            
+
             /* 按键冲突警告 */
             .aa-conflict-warning {
                 color: #f56c6c !important;
@@ -752,40 +756,40 @@
         `;
     }
 
-    // 按键视觉反馈
-    function showKeyIndicator(text) {
-        if (!userConfig.keyVisual) return;
-        
-        let div = document.getElementById('aa-key-indicator');
-        if (div) div.remove();
-        
-        div = document.createElement('div');
-        div.id = 'aa-key-indicator';
-        div.className = 'aa-key-indicator';
-        div.textContent = text;
-        document.body.appendChild(div);
-        
-        requestAnimationFrame(() => {
-            div.style.opacity = '1';
-            div.style.transform = 'translate(-50%, -50%) scale(1.2)';
-        });
-        
-        setTimeout(() => {
-            div.style.opacity = '0';
-            div.style.transform = 'translate(-50%, -50%) scale(0.8)';
-            setTimeout(() => div.remove(), 400);
-        }, 300);
-    }
+// 按键视觉反馈
+function showKeyIndicator(text) {
+    if (!userConfig.keyVisual) return;
 
-    // 显示快捷键提示
-    function showShortcutHint() {
-        let hint = document.getElementById('aa-shortcut-hint');
-        if (hint) hint.remove();
-        
-        hint = document.createElement('div');
-        hint.id = 'aa-shortcut-hint';
-        hint.className = 'aa-shortcut-hint';
-        hint.innerHTML = `
+    let div = document.getElementById('aa-key-indicator');
+    if (div) div.remove();
+
+    div = document.createElement('div');
+    div.id = 'aa-key-indicator';
+    div.className = 'aa-key-indicator';
+    div.textContent = text;
+    document.body.appendChild(div);
+
+    requestAnimationFrame(() => {
+        div.style.opacity = '1';
+        div.style.transform = 'translate(-50%, -50%) scale(1.2)';
+    });
+
+    setTimeout(() => {
+        div.style.opacity = '0';
+        div.style.transform = 'translate(-50%, -50%) scale(0.8)';
+        setTimeout(() => div.remove(), 400);
+    }, 300);
+}
+
+// 显示快捷键提示
+function showShortcutHint() {
+    let hint = document.getElementById('aa-shortcut-hint');
+    if (hint) hint.remove();
+
+    hint = document.createElement('div');
+    hint.id = 'aa-shortcut-hint';
+    hint.className = 'aa-shortcut-hint';
+    hint.innerHTML = `
             <div class="aa-hint-title">🎮 快捷键提示</div>
             <div class="aa-hint-item"><span>${userConfig.keys.submit || 'Enter'}</span><span>智能提交/下一题</span></div>
             <div class="aa-hint-item"><span>${userConfig.keys.prev || '←'}</span><span>上一题</span></div>
@@ -796,9 +800,9 @@
             <div class="aa-hint-item"><span>${userConfig.keys.op_D || '4'}</span><span>选项 D</span></div>
             <div class="aa-hint-item"><span>${userConfig.keys.op_E || '5'}</span><span>选项 E</span></div>
         `;
-        
+
         document.body.appendChild(hint);
-        
+
         // 3秒后自动隐藏
         setTimeout(() => {
             hint.style.opacity = '0';
@@ -809,200 +813,200 @@
         }, 3000);
     }
 
-    // DOM辅助函数 - 修复版
-    function clickByText(text, exact = false) {
-        try {
-            // 方法1：使用XPath查找元素
-            let xpath;
-            if (exact) {
-                xpath = `//*[text()='${text}']`;
-            } else {
-                xpath = `//*[contains(text(), '${text}')]`;
-            }
-            
-            const result = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-            
-            // 优先查找可见的按钮元素
-            for (let i = 0; i < result.snapshotLength; i++) {
-                const el = result.snapshotItem(i);
-                // 检查元素是否可见且可点击
-                if (el.offsetParent !== null && 
-                    el.getBoundingClientRect().width > 0 && 
-                    el.getBoundingClientRect().height > 0) {
-                    // 检查是否是按钮或可点击元素
-                    if (el.tagName === 'BUTTON' || 
-                        el.tagName === 'A' || 
-                        el.getAttribute('onclick') || 
-                        el.classList.contains('el-button') ||
-                        el.classList.contains('btn') ||
-                        el.parentElement.tagName === 'BUTTON') {
-                        el.click();
-                        console.log(`点击了元素: ${text}`);
-                        return true;
-                    }
-                }
-            }
-            
-            // 方法2：查找包含文本的任何可见元素
-            for (let i = 0; i < result.snapshotLength; i++) {
-                const el = result.snapshotItem(i);
-                if (el.offsetParent !== null && 
-                    el.getBoundingClientRect().width > 0 && 
-                    el.getBoundingClientRect().height > 0) {
-                    el.click();
-                    console.log(`点击了元素: ${text}`);
-                    return true;
-                }
-            }
-            
-            // 方法3：使用querySelector查找
-            const elements = document.querySelectorAll('button, a, div, span');
-            for (const el of elements) {
-                if (el.textContent.includes(text) && 
-                    el.offsetParent !== null &&
-                    el.getBoundingClientRect().width > 0) {
-                    el.click();
-                    console.log(`点击了元素: ${text}`);
-                    return true;
-                }
-            }
-            
-            return false;
-        } catch (e) {
-            console.error('点击元素时出错:', e);
-            return false;
+// DOM辅助函数 - 修复版
+function clickByText(text, exact = false) {
+    try {
+        // 方法1：使用XPath查找元素
+        let xpath;
+        if (exact) {
+            xpath = `//*[text()='${text}']`;
+        } else {
+            xpath = `//*[contains(text(), '${text}')]`;
         }
-    }
 
-    function selectOption(char) {
-        // 尝试匹配选项
-        if (clickByText(char, true)) return true;
-        if (clickByText(`${char}.`)) return true;
-        if (clickByText(`${char} `)) return true;
-        
-        // 查找选项元素
-        const options = document.querySelectorAll('.option, .el-radio, .el-checkbox, .answer-item');
-        for (const option of options) {
-            if (option.textContent.trim().startsWith(char) || 
-                option.textContent.trim().startsWith(`${char}.`) ||
-                option.textContent.trim().startsWith(`${char} `)) {
-                option.click();
+        const result = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+
+        // 优先查找可见的按钮元素
+        for (let i = 0; i < result.snapshotLength; i++) {
+            const el = result.snapshotItem(i);
+            // 检查元素是否可见且可点击
+            if (el.offsetParent !== null &&
+                el.getBoundingClientRect().width > 0 &&
+                el.getBoundingClientRect().height > 0) {
+                // 检查是否是按钮或可点击元素
+                if (el.tagName === 'BUTTON' ||
+                    el.tagName === 'A' ||
+                    el.getAttribute('onclick') ||
+                    el.classList.contains('el-button') ||
+                    el.classList.contains('btn') ||
+                    el.parentElement.tagName === 'BUTTON') {
+                    el.click();
+                    console.log(`点击了元素: ${text}`);
+                    return true;
+                }
+            }
+        }
+
+        // 方法2：查找包含文本的任何可见元素
+        for (let i = 0; i < result.snapshotLength; i++) {
+            const el = result.snapshotItem(i);
+            if (el.offsetParent !== null &&
+                el.getBoundingClientRect().width > 0 &&
+                el.getBoundingClientRect().height > 0) {
+                el.click();
+                console.log(`点击了元素: ${text}`);
                 return true;
             }
         }
-        
+
+        // 方法3：使用querySelector查找
+        const elements = document.querySelectorAll('button, a, div, span');
+        for (const el of elements) {
+            if (el.textContent.includes(text) &&
+                el.offsetParent !== null &&
+                el.getBoundingClientRect().width > 0) {
+                el.click();
+                console.log(`点击了元素: ${text}`);
+                return true;
+            }
+        }
+
+        return false;
+    } catch (e) {
+        console.error('点击元素时出错:', e);
         return false;
     }
+}
 
-    // 智能回车功能 - 修复版
-    function smartEnterAction() {
-        if (isProcessingSmartEnter) {
-            console.log('智能回车正在处理中，跳过');
+function selectOption(char) {
+    // 尝试匹配选项
+    if (clickByText(char, true)) return true;
+    if (clickByText(`${char}.`)) return true;
+    if (clickByText(`${char} `)) return true;
+
+    // 查找选项元素
+    const options = document.querySelectorAll('.option, .el-radio, .el-checkbox, .answer-item');
+    for (const option of options) {
+        if (option.textContent.trim().startsWith(char) ||
+            option.textContent.trim().startsWith(`${char}.`) ||
+            option.textContent.trim().startsWith(`${char} `)) {
+            option.click();
             return true;
         }
-        
-        console.log('执行智能回车操作');
-        isProcessingSmartEnter = true;
-        
-        // 1. 先检查是否可以提交答案
-        if (clickByText('提交答案')) {
-            console.log('已点击"提交答案"');
-            showKeyIndicator('✅ 提交');
-            
-            // 提交后等待页面加载完成
-            const checkNextButton = setInterval(() => {
-                // 检查"下一题"按钮是否出现
-                const nextButton = document.querySelector('button:contains("下一题"), a:contains("下一题"), div:contains("下一题")');
-                if (nextButton && nextButton.offsetParent !== null) {
-                    clearInterval(checkNextButton);
-                    console.log('"下一题"按钮已出现');
-                    
-                    // 等待一小段时间确保页面完全加载
-                    setTimeout(() => {
-                        // 点击下一题
-                        if (clickByText('下一题')) {
-                            console.log('已点击"下一题"');
-                            showKeyIndicator('⏭️ 下一题');
-                        } else {
-                            // 如果没有下一题，尝试交卷
-                            clickByText('交卷');
-                            console.log('已点击"交卷"');
-                            showKeyIndicator('📤 交卷');
-                        }
-                        isProcessingSmartEnter = false;
-                    }, 500);
-                }
-            }, 300);
-            
-            // 最多等待5秒
-            setTimeout(() => {
+    }
+
+    return false;
+}
+
+// 智能回车功能 - 修复版
+function smartEnterAction() {
+    if (isProcessingSmartEnter) {
+        console.log('智能回车正在处理中，跳过');
+        return true;
+    }
+
+    console.log('执行智能回车操作');
+    isProcessingSmartEnter = true;
+
+    // 1. 先检查是否可以提交答案
+    if (clickByText('提交答案')) {
+        console.log('已点击"提交答案"');
+        showKeyIndicator('✅ 提交');
+
+        // 提交后等待页面加载完成
+        const checkNextButton = setInterval(() => {
+            // 检查"下一题"按钮是否出现
+            const nextButton = document.querySelector('button:contains("下一题"), a:contains("下一题"), div:contains("下一题")');
+            if (nextButton && nextButton.offsetParent !== null) {
                 clearInterval(checkNextButton);
-                isProcessingSmartEnter = false;
-                console.log('等待下一题按钮超时');
-            }, 5000);
-            
-            return true;
-        }
-        
-        // 2. 如果已经提交，直接下一题
-        if (clickByText('下一题')) {
-            console.log('已点击"下一题"');
-            showKeyIndicator('⏭️ 下一题');
+                console.log('"下一题"按钮已出现');
+
+                // 等待一小段时间确保页面完全加载
+                setTimeout(() => {
+                    // 点击下一题
+                    if (clickByText('下一题')) {
+                        console.log('已点击"下一题"');
+                        showKeyIndicator('⏭️ 下一题');
+                    } else {
+                        // 如果没有下一题，尝试交卷
+                        clickByText('交卷');
+                        console.log('已点击"交卷"');
+                        showKeyIndicator('📤 交卷');
+                    }
+                    isProcessingSmartEnter = false;
+                }, 500);
+            }
+        }, 300);
+
+        // 最多等待5秒
+        setTimeout(() => {
+            clearInterval(checkNextButton);
             isProcessingSmartEnter = false;
-            return true;
-        }
-        
-        // 3. 如果已经是最后一题，交卷
-        if (clickByText('交卷')) {
-            console.log('已点击"交卷"');
-            showKeyIndicator('📤 交卷');
-            isProcessingSmartEnter = false;
-            return true;
-        }
-        
-        console.log('没有找到可操作的元素');
-        isProcessingSmartEnter = false;
-        return false;
+            console.log('等待下一题按钮超时');
+        }, 5000);
+
+        return true;
     }
 
-    // 创建设置面板
-    function createSettingsPanel() {
-        console.log('创建设置面板...');
-        
-        // 创建遮罩层
-        if (!settingsOverlay) {
-            settingsOverlay = document.createElement('div');
-            settingsOverlay.className = 'aa-settings-overlay';
-            settingsOverlay.addEventListener('click', closeSettingsPanel);
-            document.body.appendChild(settingsOverlay);
-        }
-        
-        // 如果面板已存在，只显示它
-        if (settingsPanel) {
-            settingsPanel.classList.add('active');
-            settingsOverlay.classList.add('active');
-            return;
-        }
-        
-        // 创建新面板
-        settingsPanel = document.createElement('div');
-        settingsPanel.id = 'aa-settings-panel';
-        settingsPanel.className = 'active';
-        
-        // 生成选项快捷键的HTML
-        let optionKeysHTML = '';
-        for (let i = 0; i < 26; i++) {
-            const char = String.fromCharCode(65 + i);
-            const keyId = `op_${char}`;
-            const keyValue = userConfig.keys[keyId] || '';
-            optionKeysHTML += `
+    // 2. 如果已经提交，直接下一题
+    if (clickByText('下一题')) {
+        console.log('已点击"下一题"');
+        showKeyIndicator('⏭️ 下一题');
+        isProcessingSmartEnter = false;
+        return true;
+    }
+
+    // 3. 如果已经是最后一题，交卷
+    if (clickByText('交卷')) {
+        console.log('已点击"交卷"');
+        showKeyIndicator('📤 交卷');
+        isProcessingSmartEnter = false;
+        return true;
+    }
+
+    console.log('没有找到可操作的元素');
+    isProcessingSmartEnter = false;
+    return false;
+}
+
+// 创建设置面板
+function createSettingsPanel() {
+    console.log('创建设置面板...');
+
+    // 创建遮罩层
+    if (!settingsOverlay) {
+        settingsOverlay = document.createElement('div');
+        settingsOverlay.className = 'aa-settings-overlay';
+        settingsOverlay.addEventListener('click', closeSettingsPanel);
+        document.body.appendChild(settingsOverlay);
+    }
+
+    // 如果面板已存在，只显示它
+    if (settingsPanel) {
+        settingsPanel.classList.add('active');
+        settingsOverlay.classList.add('active');
+        return;
+    }
+
+    // 创建新面板
+    settingsPanel = document.createElement('div');
+    settingsPanel.id = 'aa-settings-panel';
+    settingsPanel.className = 'active';
+
+    // 生成选项快捷键的HTML
+    let optionKeysHTML = '';
+    for (let i = 0; i < 26; i++) {
+        const char = String.fromCharCode(65 + i);
+        const keyId = `op_${char}`;
+        const keyValue = userConfig.keys[keyId] || '';
+        optionKeysHTML += `
                 <div class="aa-setting-item">
                     <span class="aa-setting-label">选项 ${char}</span>
                     <input type="text" class="aa-setting-input" id="key-${keyId}" value="${keyValue}" readonly>
                 </div>
             `;
         }
-        
+
         settingsPanel.innerHTML = `
             <div class="aa-settings-header" id="aa-settings-header">
                 <span>⚡ 考试宝解析增强设置 V1.3</span>
@@ -1028,7 +1032,7 @@
                         <div class="aa-setting-switch ${userConfig.keyVisual ? 'active' : ''}" data-setting="keyVisual"></div>
                     </div>
                 </div>
-                
+
                 <div class="aa-settings-group">
                     <div class="aa-settings-title">🔓 解析美化</div>
                     <div class="aa-setting-item">
@@ -1040,17 +1044,17 @@
                         <div class="aa-setting-switch ${userConfig.removeVipBox ? 'active' : ''}" data-setting="removeVipBox"></div>
                     </div>
                 </div>
-                
+
                 <div class="aa-settings-group">
                     <div class="aa-settings-title">📝 字体设置</div>
                     <div class="aa-setting-item">
                         <span class="aa-setting-label">字体大小 (px)</span>
-                        <input type="number" class="aa-setting-input" id="fontSize" 
+                        <input type="number" class="aa-setting-input" id="fontSize"
                                value="${userConfig.fontSize}" min="10" max="24" step="1">
                     </div>
                     <div class="aa-setting-item">
                         <span class="aa-setting-label">行高</span>
-                        <input type="number" class="aa-setting-input" id="lineHeight" 
+                        <input type="number" class="aa-setting-input" id="lineHeight"
                                value="${userConfig.lineHeight}" step="0.1" min="1.2" max="2.5">
                     </div>
                     <div class="aa-setting-item">
@@ -1074,26 +1078,26 @@
                         <div class="aa-setting-switch ${userConfig.boxShadowEnabled ? 'active' : ''}" data-setting="boxShadowEnabled"></div>
                     </div>
                 </div>
-                
+
                 <div class="aa-settings-group">
                     <div class="aa-settings-title">🎨 颜色设置</div>
                     <div class="aa-setting-item">
                         <span class="aa-setting-label">背景颜色</span>
-                        <input type="color" class="aa-setting-color" id="backgroundColor" 
+                        <input type="color" class="aa-setting-color" id="backgroundColor"
                                value="${userConfig.backgroundColor}">
                     </div>
                     <div class="aa-setting-item">
                         <span class="aa-setting-label">边框颜色</span>
-                        <input type="color" class="aa-setting-color" id="borderColor" 
+                        <input type="color" class="aa-setting-color" id="borderColor"
                                value="${userConfig.borderColor}">
                     </div>
                     <div class="aa-setting-item">
                         <span class="aa-setting-label">文字颜色</span>
-                        <input type="color" class="aa-setting-color" id="textColor" 
+                        <input type="color" class="aa-setting-color" id="textColor"
                                value="${userConfig.textColor}">
                     </div>
                 </div>
-                
+
                 <div class="aa-settings-group">
                     <div class="aa-settings-title">🎹 全局快捷键</div>
                     <div id="aa-conflict-warning" class="aa-conflict-warning"></div>
@@ -1114,331 +1118,331 @@
                         <input type="text" class="aa-setting-input" id="key-forceUnlock" value="${userConfig.keys.forceUnlock || ''}" readonly>
                     </div>
                 </div>
-                
+
                 <div class="aa-settings-group">
                     <div class="aa-settings-title">🎮 选项快捷键 (A-Z)</div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         ${optionKeysHTML}
                     </div>
                 </div>
-                
+
                 <div class="aa-settings-group">
                     <div class="aa-settings-title">⚙️ 高级设置</div>
                     <div class="aa-setting-item">
                         <span class="aa-setting-label">圆角大小</span>
-                        <input type="number" class="aa-setting-input" id="borderRadius" 
+                        <input type="number" class="aa-setting-input" id="borderRadius"
                                value="${userConfig.borderRadius}" min="0" max="20">
                     </div>
                     <div class="aa-setting-item">
                         <span class="aa-setting-label">内边距</span>
-                        <input type="number" class="aa-setting-input" id="padding" 
+                        <input type="number" class="aa-setting-input" id="padding"
                                value="${userConfig.padding}" min="5" max="30">
                     </div>
                     <div class="aa-setting-item">
                         <span class="aa-setting-label">边框宽度</span>
-                        <input type="number" class="aa-setting-input" id="borderLeftWidth" 
+                        <input type="number" class="aa-setting-input" id="borderLeftWidth"
                                value="${userConfig.borderLeftWidth}" min="1" max="10">
                     </div>
                 </div>
-                
+
                 <div class="aa-settings-buttons">
                     <button class="aa-settings-btn aa-settings-reset" id="aa-settings-reset">🔄 恢复默认</button>
                     <button class="aa-settings-btn aa-settings-save" id="aa-settings-save">💾 保存设置</button>
                 </div>
             </div>
         `;
-        
+
         document.body.appendChild(settingsPanel);
-        
+
         // 绑定事件
         bindSettingsEvents();
-        
+
         // 显示遮罩
         settingsOverlay.classList.add('active');
-        
+
         console.log('设置面板已创建并显示');
     }
 
-    // 绑定设置面板事件
-    function bindSettingsEvents() {
-        if (!settingsPanel) return;
-        
-        // 关闭按钮
-        const closeBtn = settingsPanel.querySelector('#aa-settings-close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                closeSettingsPanel();
-            });
-        }
-        
-        // 开关切换
-        settingsPanel.querySelectorAll('.aa-setting-switch').forEach(switchEl => {
-            switchEl.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const settingName = this.dataset.setting;
-                if (settingName) {
-                    userConfig[settingName] = !userConfig[settingName];
-                    this.classList.toggle('active');
-                }
-            });
-        });
-        
-        // 保存按钮
-        const saveBtn = settingsPanel.querySelector('#aa-settings-save');
-        if (saveBtn) {
-            saveBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                saveSettings();
-            });
-        }
-        
-        // 重置按钮
-        const resetBtn = settingsPanel.querySelector('#aa-settings-reset');
-        if (resetBtn) {
-            resetBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                resetConfig();
-            });
-        }
-        
-        // 字体设置输入框
-        const fontSizeInput = settingsPanel.querySelector('#fontSize');
-        const lineHeightInput = settingsPanel.querySelector('#lineHeight');
-        const fontFamilyInput = settingsPanel.querySelector('#fontFamily');
-        const backgroundColorInput = settingsPanel.querySelector('#backgroundColor');
-        const borderColorInput = settingsPanel.querySelector('#borderColor');
-        const textColorInput = settingsPanel.querySelector('#textColor');
-        const borderRadiusInput = settingsPanel.querySelector('#borderRadius');
-        const paddingInput = settingsPanel.querySelector('#padding');
-        const borderLeftWidthInput = settingsPanel.querySelector('#borderLeftWidth');
-        
-        if (fontSizeInput) {
-            fontSizeInput.addEventListener('change', function() {
-                userConfig.fontSize = parseFloat(this.value) || DEFAULT_CONFIG.fontSize;
-            });
-        }
-        
-        if (lineHeightInput) {
-            lineHeightInput.addEventListener('change', function() {
-                userConfig.lineHeight = parseFloat(this.value) || DEFAULT_CONFIG.lineHeight;
-            });
-        }
-        
-        if (fontFamilyInput) {
-            fontFamilyInput.addEventListener('change', function() {
-                userConfig.fontFamily = this.value;
-            });
-        }
-        
-        if (backgroundColorInput) {
-            backgroundColorInput.addEventListener('change', function() {
-                userConfig.backgroundColor = this.value;
-            });
-        }
-        
-        if (borderColorInput) {
-            borderColorInput.addEventListener('change', function() {
-                userConfig.borderColor = this.value;
-            });
-        }
-        
-        if (textColorInput) {
-            textColorInput.addEventListener('change', function() {
-                userConfig.textColor = this.value;
-            });
-        }
-        
-        if (borderRadiusInput) {
-            borderRadiusInput.addEventListener('change', function() {
-                userConfig.borderRadius = parseInt(this.value) || DEFAULT_CONFIG.borderRadius;
-            });
-        }
-        
-        if (paddingInput) {
-            paddingInput.addEventListener('change', function() {
-                userConfig.padding = parseInt(this.value) || DEFAULT_CONFIG.padding;
-            });
-        }
-        
-        if (borderLeftWidthInput) {
-            borderLeftWidthInput.addEventListener('change', function() {
-                userConfig.borderLeftWidth = parseInt(this.value) || DEFAULT_CONFIG.borderLeftWidth;
-            });
-        }
-        
-        // 按键输入处理
-        settingsPanel.querySelectorAll('.aa-setting-input[readonly]').forEach(inp => {
-            inp.onfocus = () => {
-                inp.style.borderColor = userConfig.borderColor;
-                inp.value = '按下按键...';
-            };
-            
-            inp.onblur = () => {
-                inp.style.borderColor = '#ddd';
-                const keyId = inp.id.replace('key-', '');
-                inp.value = userConfig.keys[keyId] || '';
-            };
-            
-            inp.onkeydown = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                let key = '';
-                if (e.key === 'Backspace' || e.key === 'Delete') {
-                    key = '';
-                } else if (e.key === ' ') {
-                    key = 'Space';
-                } else if (e.key === 'ArrowLeft') {
-                    key = 'ArrowLeft';
-                } else if (e.key === 'ArrowRight') {
-                    key = 'ArrowRight';
-                } else if (e.key === 'ArrowUp') {
-                    key = 'ArrowUp';
-                } else if (e.key === 'ArrowDown') {
-                    key = 'ArrowDown';
-                } else if (e.key === 'Enter') {
-                    key = 'Enter';
-                } else if (e.key === 'Escape') {
-                    key = 'Escape';
-                } else if (e.key === 'Tab') {
-                    key = 'Tab';
-                } else if (e.key.length === 1) {
-                    key = e.key;
-                } else {
-                    key = e.key;
-                }
-                
-                const keyId = inp.id.replace('key-', '');
-                userConfig.keys[keyId] = key;
-                inp.value = key;
-                inp.blur();
-                
-                // 检查按键冲突
-                checkKeyConflicts();
-            };
-        });
-        
-        // 阻止面板点击事件冒泡
-        settingsPanel.addEventListener('click', function(e) {
+// 绑定设置面板事件
+function bindSettingsEvents() {
+    if (!settingsPanel) return;
+
+    // 关闭按钮
+    const closeBtn = settingsPanel.querySelector('#aa-settings-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function(e) {
             e.stopPropagation();
+            closeSettingsPanel();
         });
     }
+
+    // 开关切换
+    settingsPanel.querySelectorAll('.aa-setting-switch').forEach(switchEl => {
+        switchEl.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const settingName = this.dataset.setting;
+            if (settingName) {
+                userConfig[settingName] = !userConfig[settingName];
+                this.classList.toggle('active');
+            }
+        });
+    });
+
+    // 保存按钮
+    const saveBtn = settingsPanel.querySelector('#aa-settings-save');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            saveSettings();
+        });
+    }
+
+    // 重置按钮
+    const resetBtn = settingsPanel.querySelector('#aa-settings-reset');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            resetConfig();
+        });
+    }
+
+    // 字体设置输入框
+    const fontSizeInput = settingsPanel.querySelector('#fontSize');
+    const lineHeightInput = settingsPanel.querySelector('#lineHeight');
+    const fontFamilyInput = settingsPanel.querySelector('#fontFamily');
+    const backgroundColorInput = settingsPanel.querySelector('#backgroundColor');
+    const borderColorInput = settingsPanel.querySelector('#borderColor');
+    const textColorInput = settingsPanel.querySelector('#textColor');
+    const borderRadiusInput = settingsPanel.querySelector('#borderRadius');
+    const paddingInput = settingsPanel.querySelector('#padding');
+    const borderLeftWidthInput = settingsPanel.querySelector('#borderLeftWidth');
+
+    if (fontSizeInput) {
+        fontSizeInput.addEventListener('change', function() {
+            userConfig.fontSize = parseFloat(this.value) || DEFAULT_CONFIG.fontSize;
+        });
+    }
+
+    if (lineHeightInput) {
+        lineHeightInput.addEventListener('change', function() {
+            userConfig.lineHeight = parseFloat(this.value) || DEFAULT_CONFIG.lineHeight;
+        });
+    }
+
+    if (fontFamilyInput) {
+        fontFamilyInput.addEventListener('change', function() {
+            userConfig.fontFamily = this.value;
+        });
+    }
+
+    if (backgroundColorInput) {
+        backgroundColorInput.addEventListener('change', function() {
+            userConfig.backgroundColor = this.value;
+        });
+    }
+
+    if (borderColorInput) {
+        borderColorInput.addEventListener('change', function() {
+            userConfig.borderColor = this.value;
+        });
+    }
+
+    if (textColorInput) {
+        textColorInput.addEventListener('change', function() {
+            userConfig.textColor = this.value;
+        });
+    }
+
+    if (borderRadiusInput) {
+        borderRadiusInput.addEventListener('change', function() {
+            userConfig.borderRadius = parseInt(this.value) || DEFAULT_CONFIG.borderRadius;
+        });
+    }
+
+    if (paddingInput) {
+        paddingInput.addEventListener('change', function() {
+            userConfig.padding = parseInt(this.value) || DEFAULT_CONFIG.padding;
+        });
+    }
+
+    if (borderLeftWidthInput) {
+        borderLeftWidthInput.addEventListener('change', function() {
+            userConfig.borderLeftWidth = parseInt(this.value) || DEFAULT_CONFIG.borderLeftWidth;
+        });
+    }
+
+    // 按键输入处理
+    settingsPanel.querySelectorAll('.aa-setting-input[readonly]').forEach(inp => {
+        inp.onfocus = () => {
+            inp.style.borderColor = userConfig.borderColor;
+            inp.value = '按下按键...';
+        };
+
+        inp.onblur = () => {
+            inp.style.borderColor = '#ddd';
+            const keyId = inp.id.replace('key-', '');
+            inp.value = userConfig.keys[keyId] || '';
+        };
+
+        inp.onkeydown = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            let key = '';
+            if (e.key === 'Backspace' || e.key === 'Delete') {
+                key = '';
+            } else if (e.key === ' ') {
+                key = 'Space';
+            } else if (e.key === 'ArrowLeft') {
+                key = 'ArrowLeft';
+            } else if (e.key === 'ArrowRight') {
+                key = 'ArrowRight';
+            } else if (e.key === 'ArrowUp') {
+                key = 'ArrowUp';
+            } else if (e.key === 'ArrowDown') {
+                key = 'ArrowDown';
+            } else if (e.key === 'Enter') {
+                key = 'Enter';
+            } else if (e.key === 'Escape') {
+                key = 'Escape';
+            } else if (e.key === 'Tab') {
+                key = 'Tab';
+            } else if (e.key.length === 1) {
+                key = e.key;
+            } else {
+                key = e.key;
+            }
+
+            const keyId = inp.id.replace('key-', '');
+            userConfig.keys[keyId] = key;
+            inp.value = key;
+            inp.blur();
+
+            // 检查按键冲突
+            checkKeyConflicts();
+        };
+    });
+
+    // 阻止面板点击事件冒泡
+    settingsPanel.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+}
+
+// 检查按键冲突
+function checkKeyConflicts() {
+    const warningEl = document.getElementById('aa-conflict-warning');
+    if (!warningEl) return;
+
+    const usedKeys = new Map();
+    const conflicts = [];
+    const keyNames = {
+        submit: '提交/确认',
+        prev: '上一题',
+        next: '下一题',
+        forceUnlock: '强制解锁'
+    };
+
+    // 添加选项键名
+    for (let i = 0; i < 26; i++) {
+        const char = String.fromCharCode(65 + i);
+        keyNames[`op_${char}`] = `选项 ${char}`;
+    }
+
+    // 检查冲突
+    for (const [id, key] of Object.entries(userConfig.keys)) {
+        if (key && key.trim() !== '') {
+            if (usedKeys.has(key)) {
+                const existingId = usedKeys.get(key);
+                conflicts.push(`按键 "${key}" 同时用于: ${keyNames[existingId]} 和 ${keyNames[id]}`);
+            } else {
+                usedKeys.set(key, id);
+            }
+        }
+    }
+
+    if (conflicts.length > 0) {
+        warningEl.innerHTML = '⚠️ 检测到按键冲突:<br>' + conflicts.join('<br>');
+        warningEl.style.display = 'block';
+    } else {
+        warningEl.style.display = 'none';
+    }
+}
+
+// 保存设置
+function saveSettings() {
+    if (!settingsPanel) return;
 
     // 检查按键冲突
-    function checkKeyConflicts() {
-        const warningEl = document.getElementById('aa-conflict-warning');
-        if (!warningEl) return;
-        
-        const usedKeys = new Map();
-        const conflicts = [];
-        const keyNames = {
-            submit: '提交/确认',
-            prev: '上一题',
-            next: '下一题',
-            forceUnlock: '强制解锁'
-        };
-        
-        // 添加选项键名
-        for (let i = 0; i < 26; i++) {
-            const char = String.fromCharCode(65 + i);
-            keyNames[`op_${char}`] = `选项 ${char}`;
+    const warningEl = document.getElementById('aa-conflict-warning');
+    if (warningEl && warningEl.style.display === 'block') {
+        if (!confirm('检测到按键冲突，确定要继续保存吗？')) {
+            return;
         }
-        
-        // 检查冲突
-        for (const [id, key] of Object.entries(userConfig.keys)) {
-            if (key && key.trim() !== '') {
-                if (usedKeys.has(key)) {
-                    const existingId = usedKeys.get(key);
-                    conflicts.push(`按键 "${key}" 同时用于: ${keyNames[existingId]} 和 ${keyNames[id]}`);
-                } else {
-                    usedKeys.set(key, id);
-                }
+    }
+
+    saveConfig();
+    closeSettingsPanel();
+}
+
+// 关闭设置面板
+function closeSettingsPanel() {
+    if (settingsPanel) {
+        settingsPanel.classList.remove('active');
+    }
+    if (settingsOverlay) {
+        settingsOverlay.classList.remove('active');
+    }
+}
+
+// 创建设置触发按钮
+function createSettingsTrigger() {
+    // 移除已存在的按钮
+    const oldTrigger = document.getElementById('aa-settings-trigger');
+    if (oldTrigger) oldTrigger.remove();
+
+    // 创建新按钮
+    const trigger = document.createElement('button');
+    trigger.id = 'aa-settings-trigger';
+    trigger.innerHTML = '⚙️';
+    trigger.title = '考试宝解析设置 (Alt+S)';
+
+    // 恢复按钮位置
+    if (userConfig.uiPos && userConfig.uiPos.top) {
+        Object.assign(trigger.style, {
+            bottom: 'auto',
+            right: 'auto',
+            top: userConfig.uiPos.top,
+            left: userConfig.uiPos.left
+        });
+    }
+
+    // 拖拽功能
+    let isDragging = false;
+    let startX, startY, initLeft, initTop;
+
+    trigger.onmousedown = (e) => {
+        isDragging = false;
+        startX = e.clientX;
+        startY = e.clientY;
+        const rect = trigger.getBoundingClientRect();
+        initLeft = rect.left;
+        initTop = rect.top;
+
+        const onMove = (mv) => {
+            if (!isDragging && (Math.abs(mv.clientX - startX) > 5 || Math.abs(mv.clientY - startY) > 5)) {
+                isDragging = true;
             }
-        }
-        
-        if (conflicts.length > 0) {
-            warningEl.innerHTML = '⚠️ 检测到按键冲突:<br>' + conflicts.join('<br>');
-            warningEl.style.display = 'block';
-        } else {
-            warningEl.style.display = 'none';
-        }
-    }
-
-    // 保存设置
-    function saveSettings() {
-        if (!settingsPanel) return;
-        
-        // 检查按键冲突
-        const warningEl = document.getElementById('aa-conflict-warning');
-        if (warningEl && warningEl.style.display === 'block') {
-            if (!confirm('检测到按键冲突，确定要继续保存吗？')) {
-                return;
-            }
-        }
-        
-        saveConfig();
-        closeSettingsPanel();
-    }
-
-    // 关闭设置面板
-    function closeSettingsPanel() {
-        if (settingsPanel) {
-            settingsPanel.classList.remove('active');
-        }
-        if (settingsOverlay) {
-            settingsOverlay.classList.remove('active');
-        }
-    }
-
-    // 创建设置触发按钮
-    function createSettingsTrigger() {
-        // 移除已存在的按钮
-        const oldTrigger = document.getElementById('aa-settings-trigger');
-        if (oldTrigger) oldTrigger.remove();
-        
-        // 创建新按钮
-        const trigger = document.createElement('button');
-        trigger.id = 'aa-settings-trigger';
-        trigger.innerHTML = '⚙️';
-        trigger.title = '考试宝解析设置 (Alt+S)';
-        
-        // 恢复按钮位置
-        if (userConfig.uiPos && userConfig.uiPos.top) {
-            Object.assign(trigger.style, {
-                bottom: 'auto',
-                right: 'auto',
-                top: userConfig.uiPos.top,
-                left: userConfig.uiPos.left
-            });
-        }
-        
-        // 拖拽功能
-        let isDragging = false;
-        let startX, startY, initLeft, initTop;
-        
-        trigger.onmousedown = (e) => {
-            isDragging = false;
-            startX = e.clientX;
-            startY = e.clientY;
-            const rect = trigger.getBoundingClientRect();
-            initLeft = rect.left;
-            initTop = rect.top;
-            
-            const onMove = (mv) => {
-                if (!isDragging && (Math.abs(mv.clientX - startX) > 5 || Math.abs(mv.clientY - startY) > 5)) {
-                    isDragging = true;
-                }
-                if (isDragging) {
-                    Object.assign(trigger.style, {
-                        bottom: 'auto',
-                        right: 'auto',
-                        left: `${initLeft + mv.clientX - startX}px`,
-                        top: `${initTop + mv.clientY - startY}px`
+            if (isDragging) {
+                Object.assign(trigger.style, {
+                    bottom: 'auto',
+                    right: 'auto',
+                    left: `${initLeft + mv.clientX - startX}px`,
+                    top: `${initTop + mv.clientY - startY}px`
                     });
                 }
             };
-            
+
             const onUp = () => {
                 document.removeEventListener('mousemove', onMove);
                 document.removeEventListener('mouseup', onUp);
@@ -1447,11 +1451,11 @@
                     saveConfigSilent();
                 }
             };
-            
+
             document.addEventListener('mousemove', onMove);
             document.addEventListener('mouseup', onUp);
         };
-        
+
         // 添加点击事件
         trigger.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -1459,77 +1463,77 @@
             createSettingsPanel();
             return false;
         });
-        
+
         document.body.appendChild(trigger);
     }
 
-    // 工具函数
-    function rgbToHex(rgb) {
-        if (rgb.startsWith('#')) return rgb;
-        
-        const match = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-        if (match) {
-            const r = parseInt(match[1]).toString(16).padStart(2, '0');
-            const g = parseInt(match[2]).toString(16).padStart(2, '0');
-            const b = parseInt(match[3]).toString(16).padStart(2, '0');
-            return `#${r}${g}${b}`;
-        }
-        return '#000000';
+// 工具函数
+function rgbToHex(rgb) {
+    if (rgb.startsWith('#')) return rgb;
+
+    const match = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]).toString(16).padStart(2, '0');
+        const g = parseInt(match[2]).toString(16).padStart(2, '0');
+        const b = parseInt(match[3]).toString(16).padStart(2, '0');
+        return `#${r}${g}${b}`;
+    }
+    return '#000000';
+}
+
+function hexToRgba(hex, alpha = 0.1) {
+    if (!hex || !hex.startsWith('#')) {
+        return alpha === 0.3 ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.1)';
     }
 
-    function hexToRgba(hex, alpha = 0.1) {
-        if (!hex || !hex.startsWith('#')) {
-            return alpha === 0.3 ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.1)';
-        }
-        
-        hex = hex.replace('#', '');
-        if (hex.length === 3) {
-            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-        }
-        
-        const r = parseInt(hex.substring(0, 2), 16);
-        const g = parseInt(hex.substring(2, 4), 16);
-        const b = parseInt(hex.substring(4, 6), 16);
-        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    hex = hex.replace('#', '');
+    if (hex.length === 3) {
+        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
     }
 
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// 删除VIP信息框
+function removeVipBoxes() {
+    const vipBoxes = document.querySelectorAll('.vip-quanyi');
+    vipBoxes.forEach(box => {
+        box.style.display = 'none';
+        box.remove();
+    });
+}
+
+// 主处理函数 - 修复解析内容显示
+function processPage() {
     // 删除VIP信息框
-    function removeVipBoxes() {
-        const vipBoxes = document.querySelectorAll('.vip-quanyi');
-        vipBoxes.forEach(box => {
-            box.style.display = 'none';
-            box.remove();
-        });
+    if (userConfig.removeVipBox) {
+        removeVipBoxes();
     }
 
-    // 主处理函数 - 修复解析内容显示
-    function processPage() {
-        // 删除VIP信息框
-        if (userConfig.removeVipBox) {
-            removeVipBoxes();
-        }
-        
-        const aiAnalysisSection = document.querySelector('.mb16');
-        if (!aiAnalysisSection) return false;
-        
-        // 移除VIP限制
-        if (userConfig.removeVipRestriction) {
-            const vipElements = aiAnalysisSection.querySelectorAll('.hide-ai-analysis, .analysis-mask, .check-all-btn-row, .lock-icon, .hide-ai-analysis-text');
-            vipElements.forEach(el => {
-                el.style.display = 'none';
-                el.remove();
-            });
-            
-            // 移除所有遮罩层
-            const masks = document.querySelectorAll('.analysis-mask, .blur-mask, .mask-box, [class*="mask"], [class*="blur"]');
-            masks.forEach(mask => {
-                mask.style.display = 'none';
-                mask.remove();
-            });
-            
-            const analysisRows = aiAnalysisSection.querySelectorAll('.answer-analysis-row.hide-height, .hide-height');
-            analysisRows.forEach(row => {
-                row.style.cssText = `
+    const aiAnalysisSection = document.querySelector('.mb16');
+    if (!aiAnalysisSection) return false;
+
+    // 移除VIP限制
+    if (userConfig.removeVipRestriction) {
+        const vipElements = aiAnalysisSection.querySelectorAll('.hide-ai-analysis, .analysis-mask, .check-all-btn-row, .lock-icon, .hide-ai-analysis-text');
+        vipElements.forEach(el => {
+            el.style.display = 'none';
+            el.remove();
+        });
+
+        // 移除所有遮罩层
+        const masks = document.querySelectorAll('.analysis-mask, .blur-mask, .mask-box, [class*="mask"], [class*="blur"]');
+        masks.forEach(mask => {
+            mask.style.display = 'none';
+            mask.remove();
+        });
+
+        const analysisRows = aiAnalysisSection.querySelectorAll('.answer-analysis-row.hide-height, .hide-height');
+        analysisRows.forEach(row => {
+            row.style.cssText = `
                     max-height: none !important;
                     height: auto !important;
                     overflow: visible !important;
@@ -1540,7 +1544,7 @@
                 row.classList.remove('hide-height');
             });
         }
-        
+
         // 检查并处理所有解析内容
         const answerAnalysisElements = document.querySelectorAll('p.answer-analysis, .answer-analysis, .answer-box-detail, .analysis-content');
         if (answerAnalysisElements.length > 0) {
@@ -1573,7 +1577,7 @@
                     position: relative !important;
                     z-index: 20 !important;
                 `;
-                
+
                 // 修复父容器
                 const parent = el.parentElement;
                 if (parent && (parent.classList.contains('answer-analysis-row') || parent.classList.contains('hide-height'))) {
@@ -1585,170 +1589,170 @@
                     `;
                 }
             });
-            
+
             // 添加状态指示器
             const analysisTop = aiAnalysisSection.querySelector('.analysis-top');
             if (analysisTop) {
                 const oldStatus = analysisTop.querySelector('.aa-replacement-status');
                 if (oldStatus) oldStatus.remove();
-                
+
                 const statusDiv = document.createElement('div');
                 statusDiv.className = 'aa-replacement-status aa-status-success';
                 statusDiv.innerHTML = '✅ 已解锁完整解析';
                 analysisTop.appendChild(statusDiv);
             }
-            
+
             return true;
         }
-        
+
         return false;
     }
 
-    // 设置全局键盘事件监听
-    function setupKeyboardEvents() {
-        document.addEventListener('keydown', (e) => {
-            // 忽略输入框内的按键
-            const tag = document.activeElement.tagName;
-            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || document.activeElement.isContentEditable) {
-                return;
-            }
-            
-            const key = e.key;
-            let handled = false;
-            
-            // 选项快捷键 (A-Z)
-            for (let i = 0; i < 26; i++) {
-                const char = String.fromCharCode(65 + i);
-                const keyId = `op_${char}`;
-                if (userConfig.keys[keyId] === key) {
-                    selectOption(char);
-                    showKeyIndicator(char);
-                    handled = true;
-                    break;
-                }
-            }
-            
-            // 功能快捷键
-            if (!handled) {
-                if (key === userConfig.keys.submit) {
-                    handled = true;
-                    if (userConfig.smartEnter) {
-                        smartEnterAction();
-                    } else {
-                        clickByText('提交答案');
-                        showKeyIndicator('📤');
-                    }
-                } else if (key === userConfig.keys.prev && userConfig.scriptNav) {
-                    handled = true;
-                    showKeyIndicator('←');
-                    clickByText('上一题');
-                } else if (key === userConfig.keys.next && userConfig.scriptNav) {
-                    handled = true;
-                    showKeyIndicator('→');
-                    clickByText('下一题');
-                } else if (key === userConfig.keys.forceUnlock) {
-                    handled = true;
-                    processPage();
-                    showKeyIndicator('🔓');
-                }
-            }
-            
-            if (handled) {
-                e.stopPropagation();
-                e.preventDefault();
-            }
-        }, true);
-    }
-
-    // 注册菜单命令
-    function registerMenuCommands() {
-        try {
-            GM_registerMenuCommand('⚙️ 打开设置面板', createSettingsPanel);
-            GM_registerMenuCommand('🧠 显示快捷键提示', showShortcutHint);
-            GM_registerMenuCommand('🔓 立即解锁解析', () => {
-                processPage();
-                GM_notification({
-                    title: '考试宝解析',
-                    text: '已解锁所有解析内容',
-                    timeout: 1500
-                });
-            });
-        } catch (e) {
-            console.log('菜单注册失败:', e);
+// 设置全局键盘事件监听
+function setupKeyboardEvents() {
+    document.addEventListener('keydown', (e) => {
+        // 忽略输入框内的按键
+        const tag = document.activeElement.tagName;
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || document.activeElement.isContentEditable) {
+            return;
         }
-    }
 
-    // 主入口
-    function init() {
-        console.log('考试宝AI解析美化增强版已启动 V1.3 - 修复了解析内容显示问题');
-        
-        // 初始化配置
-        initConfig();
-        
-        // 应用样式
-        updateStyles();
-        
-        // 创建设置按钮
-        setTimeout(() => {
-            createSettingsTrigger();
-            // 显示快捷键提示
-            showShortcutHint();
-        }, 1500);
-        
-        // 注册菜单
-        registerMenuCommands();
-        
-        // 设置键盘事件
-        setupKeyboardEvents();
-        
-        // 初始处理
-        setTimeout(() => {
-            processPage();
-            
-            // 定时扫描并修复
-            setInterval(() => {
-                if (userConfig.autoReplace) {
-                    processPage();
-                    // 额外修复可能残留的问题
-                    fixRemainingIssues();
+        const key = e.key;
+        let handled = false;
+
+        // 选项快捷键 (A-Z)
+        for (let i = 0; i < 26; i++) {
+            const char = String.fromCharCode(65 + i);
+            const keyId = `op_${char}`;
+            if (userConfig.keys[keyId] === key) {
+                selectOption(char);
+                showKeyIndicator(char);
+                handled = true;
+                break;
+            }
+        }
+
+        // 功能快捷键
+        if (!handled) {
+            if (key === userConfig.keys.submit) {
+                handled = true;
+                if (userConfig.smartEnter) {
+                    smartEnterAction();
+                } else {
+                    clickByText('提交答案');
+                    showKeyIndicator('📤');
                 }
-            }, userConfig.scanInterval);
-        }, 2000);
-        
-        // 添加键盘快捷键（Alt+S打开设置）
-        document.addEventListener('keydown', function(e) {
-            if (e.altKey && e.key === 's') {
-                e.preventDefault();
-                createSettingsPanel();
+            } else if (key === userConfig.keys.prev && userConfig.scriptNav) {
+                handled = true;
+                showKeyIndicator('←');
+                clickByText('上一题');
+            } else if (key === userConfig.keys.next && userConfig.scriptNav) {
+                handled = true;
+                showKeyIndicator('→');
+                clickByText('下一题');
+            } else if (key === userConfig.keys.forceUnlock) {
+                handled = true;
+                processPage();
+                showKeyIndicator('🔓');
             }
-        });
-    }
-    
-    // 修复残留的问题
-    function fixRemainingIssues() {
-        // 移除任何可能的遮罩
-        const masks = document.querySelectorAll('[style*="opacity"], [style*="filter"], [class*="mask"], [class*="blur"]');
-        masks.forEach(el => {
-            if (el.style.opacity === '0' || el.style.filter?.includes('blur')) {
-                el.style.display = 'none';
-            }
-        });
-        
-        // 确保解析内容完全可见
-        const analysisElements = document.querySelectorAll('.answer-analysis, .answer-box-detail');
-        analysisElements.forEach(el => {
-            if (el.offsetHeight < el.scrollHeight) {
-                el.style.maxHeight = 'none';
-                el.style.height = 'auto';
-            }
-        });
-    }
+        }
 
-    // 页面加载后初始化
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        setTimeout(init, 1000);
+        if (handled) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
+    }, true);
+}
+
+// 注册菜单命令
+function registerMenuCommands() {
+    try {
+        GM_registerMenuCommand('⚙️ 打开设置面板', createSettingsPanel);
+        GM_registerMenuCommand('🧠 显示快捷键提示', showShortcutHint);
+        GM_registerMenuCommand('🔓 立即解锁解析', () => {
+            processPage();
+            GM_notification({
+                title: '考试宝解析',
+                text: '已解锁所有解析内容',
+                timeout: 1500
+            });
+        });
+    } catch (e) {
+        console.log('菜单注册失败:', e);
     }
+}
+
+// 主入口
+function init() {
+    console.log('考试宝AI解析美化增强版已启动 V1.3 - 修复了解析内容显示问题');
+
+    // 初始化配置
+    initConfig();
+
+    // 应用样式
+    updateStyles();
+
+    // 创建设置按钮
+    setTimeout(() => {
+        createSettingsTrigger();
+        // 显示快捷键提示
+        showShortcutHint();
+    }, 1500);
+
+    // 注册菜单
+    registerMenuCommands();
+
+    // 设置键盘事件
+    setupKeyboardEvents();
+
+    // 初始处理
+    setTimeout(() => {
+        processPage();
+
+        // 定时扫描并修复
+        setInterval(() => {
+            if (userConfig.autoReplace) {
+                processPage();
+                // 额外修复可能残留的问题
+                fixRemainingIssues();
+            }
+        }, userConfig.scanInterval);
+    }, 2000);
+
+    // 添加键盘快捷键（Alt+S打开设置）
+    document.addEventListener('keydown', function(e) {
+        if (e.altKey && e.key === 's') {
+            e.preventDefault();
+            createSettingsPanel();
+        }
+    });
+}
+
+// 修复残留的问题
+function fixRemainingIssues() {
+    // 移除任何可能的遮罩
+    const masks = document.querySelectorAll('[style*="opacity"], [style*="filter"], [class*="mask"], [class*="blur"]');
+    masks.forEach(el => {
+        if (el.style.opacity === '0' || el.style.filter?.includes('blur')) {
+            el.style.display = 'none';
+        }
+    });
+
+    // 确保解析内容完全可见
+    const analysisElements = document.querySelectorAll('.answer-analysis, .answer-box-detail');
+    analysisElements.forEach(el => {
+        if (el.offsetHeight < el.scrollHeight) {
+            el.style.maxHeight = 'none';
+            el.style.height = 'auto';
+        }
+    });
+}
+
+// 页面加载后初始化
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    setTimeout(init, 1000);
+}
 
 })();
