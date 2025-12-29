@@ -4,7 +4,7 @@
 // @version      V1.3
 // @description  考试宝AI解析美化+智能快捷键+VIP破解+界面净化
 // @author       zhuqq2020,大聪明
-// @match        *://*.kaoshibao.com/online/?paperId=*
+// @match        *://*.kaoshibao.com/*
 // @icon         https://www.kaoshibao.com/favicon.ico
 // @downloadURL https://raw.githubusercontent.com/zhuqq2020/kaoshibao_Answer_analysis_box/refs/heads/main/main.user.js
 // @updateURL    https://raw.githubusercontent.com/zhuqq2020/kaoshibao_Answer_analysis_box/refs/heads/main/main.user.js
